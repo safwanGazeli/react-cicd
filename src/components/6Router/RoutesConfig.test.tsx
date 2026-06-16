@@ -75,13 +75,22 @@ describe('Routes config tests', () => {
     })
 
     describe('Navbar navigation tests', () => {
-        // mock request in order to test
-        global["Request"] = vi.fn().mockImplementation(() => ({
-            signal: {
-                removeEventListener: () => { },
-                addEventListener: () => { },
-            },
-        }));
+        if (!globalThis.Request) {
+            globalThis.Request = vi.fn().mockImplementation(function (input: string | URL, init?: RequestInit) {
+                return {
+                    url: String(input),
+                    method: init?.method ?? 'GET',
+                    headers: new Headers(init?.headers),
+                    signal: init?.signal ?? {
+                        aborted: false,
+                        reason: undefined,
+                        removeEventListener: () => { },
+                        addEventListener: () => { },
+                    },
+                    redirect: init?.redirect,
+                };
+            }) as unknown as typeof Request;
+        }
 
 
         it('show home component on home click', async () => {
